@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 });
 
 // error handler
-app.use(async (err, req, res, next) => {
+app.use((err, req, res, next) => {
   // set locals, only providing error in development
   const error = {
     message: err.message,
