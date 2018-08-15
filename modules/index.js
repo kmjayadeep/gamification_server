@@ -1,0 +1,3 @@
+const AVAILABLE_MODULES = ['github'];
+
+module.exports.AVAILABLE_MODULES = AVAILABLE_MODULES;
