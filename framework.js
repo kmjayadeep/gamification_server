@@ -1,33 +1,34 @@
 const AVAILABLE_MODULES = require('./modules').AVAILABLE_MODULES;
 
-class FrameworkInterface{
-    constructor(moduleName){
+class FrameworkInterface {
+    constructor(moduleName) {
         this.moduleName = moduleName;
     }
-    triggerEvent(){
+    triggerEvent(event) {
+        //TODO
+        console.log('event triggered', event);
+    }
+    setupBadges() {
         //TODO
     }
-    setupBadges(){
-        //TODO
-    }
-    getEventHistory(){
+    getEventHistory() {
         //TODO
     }
 }
 
 class Framework {
     constructor() {
-        this.modules = [];
+        this.modules = {};
         for (let moduleName of AVAILABLE_MODULES) {
             const Module = require('./modules/' + moduleName);
             const frameworkInterface = new FrameworkInterface(moduleName);
             const module = new Module(frameworkInterface);
             module.initializeModule();
-            this.modules.push(module);
+            this.modules[moduleName] = module;
         }
-        console.log(this.modules)
     }
 }
 
-new Framework();
-
+//for testing
+const framework = new Framework()
+framework.modules.github.registerUser('kmjayadeep','booktradingclub','kmjayadeep');
