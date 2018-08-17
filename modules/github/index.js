@@ -10,8 +10,10 @@ class GithubModule extends BaseModule {
         //TODO
     }
 
-    registerUser(userName, repoName, repoOwner) {
-        this.getCommits(userName, repoName, repoOwner);
+    async registerUser(userName, repoName, repoOwner) {
+        const commits = await this.getCommits(userName, repoName, repoOwner);
+        if (commits.length > 0)
+            this.frameworkInterface.triggerEvent('FIrst commit');
     }
 
     refreshData() {
@@ -34,7 +36,7 @@ class GithubModule extends BaseModule {
             json: true
         };
         const commits = await request(options);
-        console.log(commits.length)
+        return commits;
     }
 }
 
