@@ -7,7 +7,8 @@ const API_BASE_URL = 'https://api.github.com/';
 class GithubModule extends BaseModule {
 
     initializeModule() {
-        //TODO
+        // Initialize db
+        // models.sequelize.sync().then(() => {});
     }
 
     async registerUser(userName, repoName, repoOwner) {

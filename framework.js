@@ -1,13 +1,20 @@
 const express = require('express');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
+const FrameworkInterface = require('./FrameworkInterface');
 
 class Framework {
   constructor(app) {
     this.app = app;
-    this.configureExpress(app);
-    app.use(this.route404Handler);
-    app.use(this.errorHandler);
+  }
+
+  async initialize() {
+    this.configureExpress(this.app);
+    const frameworkInterface = new FrameworkInterface(this);
+    await frameworkInterface.initialize();
+    this.app.use(this.route404Handler);
+    this.app.use(this.errorHandler);
+    return this.app;
   }
 
   getApp() {
