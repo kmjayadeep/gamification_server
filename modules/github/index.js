@@ -23,7 +23,12 @@ class GithubModule extends BaseModule {
 
     getMetadata() {
         return {
-            name: 'Github Module'
+            name: 'Github Module',
+            requiredFields: {
+                'userName': 'Github Username',
+                'repoName': 'Github Repository to track',
+                'repoName': 'Owner of github repository'
+            }
         }
     }
 

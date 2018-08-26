@@ -1,8 +1,9 @@
 const AVAILABLE_MODULES = require('./modules').AVAILABLE_MODULES;
 
 class FrameworkInterface {
-    constructor(framework) {
+    constructor(framework, apiService) {
         this.framework = framework;
+        this.apiService = apiService;
         this.app = framework.getApp();
         this.registerModules();
     }
@@ -22,11 +23,20 @@ class FrameworkInterface {
     }
 
     registerRoutes() {
-        this.app.get('/api/v1', (req, res) => {
-            res.json({
-                version: '0.0.1'
-            });
+        this.apiService.addGetRoute('/activate/:module', (req, res) => {
+            const module = req.params.module;
+            if (module in this.modules) {
+                const metadata = this.modules[module].getMetadata();
+                return res.json(metadata);
+            }
+            return res.status(400).json({
+                message: "Invalid module"
+            })
         })
+    }
+
+    activateModule(module, user) {
+
     }
 
     triggerEvent(event) {
