@@ -11,7 +11,7 @@ class BaseModule {
         //Setup DB etc
         throw new Error('Not implemented');
     }
-    registerUser() {
+    activateModule() {
         //setup new user, fill initial data, update coins, badges
         throw new Error('Not implemented');
     }

@@ -11,23 +11,37 @@ class GithubModule extends BaseModule {
         // models.sequelize.sync().then(() => {});
     }
 
-    async registerUser(userName, repoName, repoOwner) {
+    async activateModule({
+        userName,
+        repoName,
+        repoOwner
+    }) {
+        //TODO validate params
+        //TODO Add git hooks
+        this.fetchInitialData(userName, repoName, repoOwner); //Works in background
+        return {
+            message: "Activated Github Module"
+        }
+    }
+
+    async fetchInitialData(userName, repoName, repoOwner) {
         const commits = await this.getCommits(userName, repoName, repoOwner);
         if (commits.length > 0)
             this.frameworkInterface.triggerEvent('FIrst commit');
     }
 
-    refreshData() {
-        //TODO
+    refreshData(){
+        
     }
 
     getMetadata() {
         return {
             name: 'Github Module',
+            description: 'Track git related activities, earn points and trophies',
             requiredFields: {
                 'userName': 'Github Username',
                 'repoName': 'Github Repository to track',
-                'repoName': 'Owner of github repository'
+                'repoOwner': 'Owner of github repository'
             }
         }
     }

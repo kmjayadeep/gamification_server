@@ -1,6 +1,6 @@
 const AVAILABLE_MODULES = require('./modules').AVAILABLE_MODULES;
 
-class FrameworkInterface {
+class ModuleInterface {
     constructor(framework, apiService) {
         this.framework = framework;
         this.apiService = apiService;
@@ -24,10 +24,22 @@ class FrameworkInterface {
 
     registerRoutes() {
         this.apiService.addGetRoute('/activate/:module', (req, res) => {
-            const module = req.params.module;
-            if (module in this.modules) {
-                const metadata = this.modules[module].getMetadata();
+            const moduleName = req.params.module;
+            if (moduleName in this.modules) {
+                const metadata = this.modules[moduleName].getMetadata();
                 return res.json(metadata);
+            }
+            return res.status(400).json({
+                message: "Invalid module"
+            })
+        })
+        this.apiService.addPostRoute('/activate/:module', async (req, res) => {
+            const moduleName = req.params.module;
+            if (moduleName in this.modules) {
+                const params = req.body;
+                const user = req.user;
+                const response = await this.activateModule(moduleName, user, params);
+                return res.json(response);
             }
             return res.status(400).json({
                 message: "Invalid module"
@@ -35,8 +47,10 @@ class FrameworkInterface {
         })
     }
 
-    activateModule(module, user) {
-
+    async activateModule(moduleName, user, params) {
+        //TODO save user-module mapping to db
+        const module = this.modules[moduleName];
+        return module.activateModule(params);
     }
 
     triggerEvent(event) {
@@ -51,4 +65,4 @@ class FrameworkInterface {
     }
 }
 
-module.exports = FrameworkInterface;
+module.exports = ModuleInterface;

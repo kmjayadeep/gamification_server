@@ -1,7 +1,7 @@
 const express = require('express');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
-const FrameworkInterface = require('./FrameworkInterface');
+const ModuleInterface = require('./ModuleInterface');
 const apiService = require('./services/api');
 
 class Framework {
@@ -11,8 +11,8 @@ class Framework {
 
   async initialize() {
     this.configureExpress(this.app);
-    const frameworkInterface = new FrameworkInterface(this, apiService);
-    await frameworkInterface.initialize();
+    const moduleInterface = new ModuleInterface(this, apiService);
+    await moduleInterface.initialize();
     const router = apiService.router;
     this.app.use('/api', router);
     this.app.use(this.route404Handler);
