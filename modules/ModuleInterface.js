@@ -1,4 +1,5 @@
-const AVAILABLE_MODULES = require('./modules').AVAILABLE_MODULES;
+const AVAILABLE_MODULES = require('./').AVAILABLE_MODULES;
+const db = require('./db');
 
 class ModuleInterface {
     constructor(framework, apiService) {
@@ -9,13 +10,14 @@ class ModuleInterface {
     }
 
     async initialize() {
+        await db.sequelize.sync();
         this.registerRoutes();
     }
 
     registerModules() {
         this.modules = {};
         for (let moduleName of AVAILABLE_MODULES) {
-            const Module = require('./modules/' + moduleName);
+            const Module = require('./' + moduleName);
             const module = new Module(this);
             module.initializeModule();
             this.modules[moduleName] = module;
@@ -38,8 +40,18 @@ class ModuleInterface {
             if (moduleName in this.modules) {
                 const params = req.body;
                 const user = req.user;
-                const response = await this.activateModule(moduleName, user, params);
-                return res.json(response);
+                try {
+                    const response = await this.activateModule(moduleName, user, params);
+                    return res.json(response);
+                } catch (err) {
+                    if (err.name == 'SequelizeUniqueConstraintError')
+                        return res.json({
+                            message: 'Already activated'
+                        })
+                    else return res.status(400).json({
+                        message: 'Unknown Error'
+                    })
+                }
             }
             return res.status(400).json({
                 message: "Invalid module"
@@ -48,9 +60,12 @@ class ModuleInterface {
     }
 
     async activateModule(moduleName, user, params) {
-        //TODO save user-module mapping to db
+        await db.models.UserModule.create({
+            userId: user.id,
+            module: moduleName
+        })
         const module = this.modules[moduleName];
-        return module.activateModule(params);
+        return await module.activateModule(params);
     }
 
     triggerEvent(event) {

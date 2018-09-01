@@ -1,10 +1,10 @@
 //base class of all pluggable modules, eg: Github module
 
 class BaseModule {
-    constructor(frameworkInterface) {
-        if (typeof frameworkInterface !== 'object')
+    constructor(moduleInterface) {
+        if (typeof moduleInterface !== 'object')
             throw new Error('Cannot initialize Module without framework')
-        this.frameworkInterface = frameworkInterface;
+        this.moduleInterface = moduleInterface;
     }
     initializeModule() {
         //Initialize the module by adding necessary badges to framework,

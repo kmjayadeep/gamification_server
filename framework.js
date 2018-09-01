@@ -1,7 +1,7 @@
 const express = require('express');
 const logger = require('morgan');
 const bodyParser = require('body-parser');
-const ModuleInterface = require('./ModuleInterface');
+const ModuleInterface = require('./modules/ModuleInterface');
 const apiService = require('./services/api');
 
 class Framework {

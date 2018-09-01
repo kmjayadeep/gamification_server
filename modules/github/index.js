@@ -27,7 +27,7 @@ class GithubModule extends BaseModule {
     async fetchInitialData(userName, repoName, repoOwner) {
         const commits = await this.getCommits(userName, repoName, repoOwner);
         if (commits.length > 0)
-            this.frameworkInterface.triggerEvent('FIrst commit');
+            this.moduleInterface.triggerEvent('FIrst commit');
     }
 
     refreshData(){
