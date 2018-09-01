@@ -3,6 +3,7 @@ const logger = require('morgan');
 const bodyParser = require('body-parser');
 const ModuleInterface = require('./modules/ModuleInterface');
 const apiService = require('./services/api');
+const UserService = require('./services/user');
 
 class Framework {
   constructor(app) {
@@ -12,6 +13,8 @@ class Framework {
   async initialize() {
     this.configureExpress(this.app);
     const moduleInterface = new ModuleInterface(this, apiService);
+    const userService = new UserService(apiService);
+    await userService.initialize();
     await moduleInterface.initialize();
     const router = apiService.router;
     this.app.use('/api', router);

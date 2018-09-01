@@ -9,6 +9,7 @@ router.use((req,res,next)=>{
     next();
 })
 
+exports.useChildRouter = (url,childRouter)=> router.use(url,childRouter);
 exports.addGetRoute = (url, handler) => router.get(url, handler);
 exports.addPostRoute = (url, handler) => router.post(url, handler);
 
