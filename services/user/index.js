@@ -14,7 +14,8 @@ class UserService {
         const router = express.Router();
         router.post('/register', this.register);
         router.post('/login', this.loginBasic);
-        this.apiService.useChildRouter('/user', router);
+        this.apiService.useMiddleware('/', this.verifyLogin);
+        this.apiService.useMiddleware('/user', router);
     }
 
     async register(req, res) {
@@ -76,8 +77,16 @@ class UserService {
         })
     }
 
-    async verifyLogin(req, res) {
-
+    async verifyLogin(req, res, next) {
+        const authHeader = req.headers.authorization
+        if (authHeader && authHeader.split(' ')[0] === 'Bearer' && authHeader.split(' ').length == 2) {
+            const token = authHeader.split(' ')[1];
+            let decoded = jwt.verify(token, config.user.tokenSecret)
+            req.user = {
+                id: decoded.id
+            }
+        }
+        next()
     }
 }
 

@@ -35,7 +35,7 @@ class ModuleInterface {
                 message: "Invalid module"
             })
         })
-        this.apiService.addPostRoute('/activate/:module', async (req, res) => {
+        this.apiService.addProtectedPostRoute('/activate/:module', async (req, res) => {
             const moduleName = req.params.module;
             if (moduleName in this.modules) {
                 const params = req.body;
