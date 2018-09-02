@@ -1,5 +1,8 @@
-const db = require('./db');
 const express = require('express');
+const jwt = require('jsonwebtoken');
+const config = require('../../config/config');
+const db = require('./db');
+const sha1 = require('./helpers/sha1');
 
 class UserService {
     constructor(apiService) {
@@ -15,11 +18,22 @@ class UserService {
     }
 
     async register(req, res) {
-        const {
+        let {
             name,
             email,
             password
         } = req.body;
+        const checkEmail = await db.models.User.findOne({
+            where: {
+                email
+            }
+        })
+        if (checkEmail) {
+            return res.status(400).json({
+                message: "Email already registered"
+            })
+        }
+        password = sha1(password);
         try {
             const user = await db.models.User.create({
                 name,
@@ -34,7 +48,33 @@ class UserService {
         }
     }
 
-    async loginBasic(req, res) {}
+    async loginBasic(req, res) {
+        let {
+            email,
+            password
+        } = req.body;
+        password = sha1(password);
+        const user = await db.models.User.findOne({
+            where: {
+                email,
+                password
+            }
+        })
+        const expiresIn = config.user.tokenExpires;
+        const token = jwt.sign({
+            id: user.id
+        }, config.user.tokenSecret, {
+            expiresIn
+        });
+        res.json({
+            user: {
+                id: user.id,
+                name: user.name
+            },
+            token,
+            expiresIn
+        })
+    }
 
     async verifyLogin(req, res) {
 
