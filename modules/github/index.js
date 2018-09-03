@@ -18,9 +18,39 @@ class GithubModule extends BaseModule {
     }) {
         //TODO validate params
         //TODO Add git hooks
-        this.fetchInitialData(userName, repoName, repoOwner); //Works in background
-        return {
-            message: "Activated Github Module"
+        try {
+            let verified = await this.verifyDetails(userName, repoName, repoOwner);
+            if (verified) {
+                this.fetchInitialData(userName, repoName, repoOwner); //Works in background
+                return {
+                    message: "Activated Github Module"
+                }
+            }
+            return {
+                error: "Invalid details",
+                status: 400
+            }
+        } catch (err) {
+            return {
+                error: "Something went wrong",
+                status: 500
+            };
+        }
+    }
+
+    async verifyDetails(userName, repoName, repoOwner) {
+        var options = {
+            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}`,
+            headers: {
+                'User-Agent': 'Gamification'
+            },
+            json: true
+        };
+        try {
+            const repo = await request(options);
+            return true;
+        } catch (err) {
+            return false;
         }
     }
 
@@ -30,8 +60,8 @@ class GithubModule extends BaseModule {
             this.moduleInterface.triggerEvent('FIrst commit');
     }
 
-    refreshData(){
-        
+    refreshData() {
+
     }
 
     getMetadata() {

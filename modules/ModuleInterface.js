@@ -42,6 +42,11 @@ class ModuleInterface {
                 const user = req.user;
                 try {
                     const response = await this.activateModule(moduleName, user, params);
+                    if (response.status) {
+                        return res.status(response.status).json({
+                            error: response.error
+                        })
+                    }
                     return res.json(response);
                 } catch (err) {
                     if (err.name == 'SequelizeUniqueConstraintError')
@@ -60,12 +65,24 @@ class ModuleInterface {
     }
 
     async activateModule(moduleName, user, params) {
-        await db.models.UserModule.create({
-            userId: user.id,
-            module: moduleName
-        })
         const module = this.modules[moduleName];
-        return await module.activateModule(params);
+        const activated = await module.activateModule(params);
+        console.log(activated)
+        if (!activated.error) {
+            const moduleMap = await db.models.UserModule.findOne({
+                where: {
+                    userId: user.id,
+                    module: moduleName
+                }
+            })
+            if (!moduleMap) {
+                await db.models.UserModule.create({
+                    userId: user.id,
+                    module: moduleName
+                })
+            }
+        }
+        return activated;
     }
 
     triggerEvent(event) {
