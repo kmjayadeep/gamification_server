@@ -11,19 +11,21 @@ class GithubModule extends BaseModule {
         // models.sequelize.sync().then(() => {});
     }
 
-    async activateModule({
-        userName,
-        repoName,
-        repoOwner
+    async activateModule(user, {
+        userName
     }) {
-        //TODO validate params
-        //TODO Add git hooks
+        return {
+            message: "Activated Github module"
+        }
+    }
+
+    async addRepo(userName, repoName, repoOwner) {
         try {
-            let verified = await this.verifyDetails(userName, repoName, repoOwner);
+            let verified = await this.verifyDetails(repoName, repoOwner);
             if (verified) {
                 this.fetchInitialData(userName, repoName, repoOwner); //Works in background
                 return {
-                    message: "Activated Github Module"
+                    message: "Added Repository"
                 }
             }
             return {
@@ -38,7 +40,7 @@ class GithubModule extends BaseModule {
         }
     }
 
-    async verifyDetails(userName, repoName, repoOwner) {
+    async verifyDetails(repoName, repoOwner) {
         var options = {
             uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}`,
             headers: {

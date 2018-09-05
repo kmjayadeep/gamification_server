@@ -66,8 +66,7 @@ class ModuleInterface {
 
     async activateModule(moduleName, user, params) {
         const module = this.modules[moduleName];
-        const activated = await module.activateModule(params);
-        console.log(activated)
+        const activated = await module.activateModule(user, params);
         if (!activated.error) {
             const moduleMap = await db.models.UserModule.findOne({
                 where: {
