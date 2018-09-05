@@ -1,6 +1,6 @@
 const path = require('path');
 const Sequelize = require('sequelize');
-const dbConfig = require('../../config/config').database;
+const dbConfig = require('../../../config/config').database;
 const db = {};
 
 const sequelize = new Sequelize(dbConfig.name, dbConfig.username, dbConfig.password, {
@@ -10,7 +10,7 @@ const sequelize = new Sequelize(dbConfig.name, dbConfig.username, dbConfig.passw
     logging: false
 });
 
-const models = ['userModule'];
+const models = ['githubUser', 'repository'];
 
 models.forEach(file => {
     const model = sequelize['import'](path.join(__dirname, file + '.js'));

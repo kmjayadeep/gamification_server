@@ -1,21 +1,30 @@
-var request = require('request-promise');
-
+const request = require('request-promise');
 const BaseModule = require('../BaseModule');
+const db = require('./db');
 
 const API_BASE_URL = 'https://api.github.com/';
 
 class GithubModule extends BaseModule {
 
-    initializeModule() {
-        // Initialize db
-        // models.sequelize.sync().then(() => {});
+    async initializeModule() {
+        await db.sequelize.sync();
     }
 
     async activateModule(user, {
         userName
     }) {
-        return {
-            message: "Activated Github module"
+        try {
+            await db.models.githubUser.create({
+                userId: user.id,
+                userName
+            })
+            return {
+                message: "Activated Github module"
+            }
+        } catch (error) {
+            return {
+                error
+            }
         }
     }
 
@@ -71,9 +80,7 @@ class GithubModule extends BaseModule {
             name: 'Github Module',
             description: 'Track git related activities, earn points and trophies',
             requiredFields: {
-                'userName': 'Github Username',
-                'repoName': 'Github Repository to track',
-                'repoOwner': 'Owner of github repository'
+                'userName': 'Github Username'
             }
         }
     }
