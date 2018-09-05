@@ -14,12 +14,12 @@ class ModuleInterface {
         this.registerRoutes();
     }
 
-    registerModules() {
+    async registerModules() {
         this.modules = {};
         for (let moduleName of AVAILABLE_MODULES) {
             const Module = require('./' + moduleName);
             const module = new Module(this);
-            module.initializeModule();
+            await module.initializeModule();
             this.modules[moduleName] = module;
         }
     }
@@ -62,6 +62,10 @@ class ModuleInterface {
                 message: "Invalid module"
             })
         })
+        for (let moduleName of AVAILABLE_MODULES) {
+            const module = this.modules[moduleName];
+            module.registerRoutes(this.apiService);
+        }
     }
 
     async activateModule(moduleName, user, params) {

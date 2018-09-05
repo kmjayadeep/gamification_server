@@ -10,10 +10,46 @@ class GithubModule extends BaseModule {
         await db.sequelize.sync();
     }
 
+    registerRoutes(apiService) {
+        apiService.addProtectedPostRoute('/github/repo', async (req, res) => {
+            const {
+                repoName,
+                repoOwner
+            } = req.body;
+            const user = req.user;
+            const githubUser = await db.models.githubUser.findOne({
+                where: {
+                    userId: user.id
+                }
+            });
+            if (!githubUser)
+                return res.status(400).json({
+                    error: 'Github module not activated for this user'
+                });
+            const userName = githubUser.userName;
+            const repoResult = await this.addRepo(userName, repoName, repoOwner);
+            if (repoResult.error)
+                res.status(repoResult.status).json({
+                    error: repoResult.error
+                });
+            else
+                res.json(repoResult);
+        })
+    }
+
     async activateModule(user, {
         userName
     }) {
         try {
+            const existing = await db.models.githubUser.findOne({
+                where: {
+                    userId: user.id
+                }
+            })
+            if (existing)
+                return {
+                    message: "Already activated"
+                }
             await db.models.githubUser.create({
                 userId: user.id,
                 userName
