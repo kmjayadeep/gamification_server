@@ -6,11 +6,11 @@ class ModuleInterface {
         this.framework = framework;
         this.apiService = apiService;
         this.app = framework.getApp();
-        this.registerModules();
     }
-
+    
     async initialize() {
         await db.sequelize.sync();
+        await this.registerModules();
         this.registerRoutes();
     }
 
