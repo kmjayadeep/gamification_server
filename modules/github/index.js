@@ -128,7 +128,7 @@ class GithubModule extends BaseModule {
 
     async fetchInitialData(userName, repoName, repoOwner) {
         await this.fetchCommits(userName, repoName, repoOwner);
-        this.refreshData(userName);
+        this.refreshEvents(userName, repoName);
         // if (commits.length > 0) {
         //     let commit = commits[0];
         //     let commitDate = new Date(commit.commit.author.date);
@@ -192,8 +192,34 @@ class GithubModule extends BaseModule {
         return events;
     }
 
-    refreshData() {
-
+    async refreshEvents(userName) {
+        await db.models.userEvent.destroy({
+            where: {
+                userName
+            }
+        })
+        const GitCommit = db.mongoModels.GitCommit;
+        const commitCount = await GitCommit.count({
+            userName
+        });
+        if (commitCount > 0) {
+            const commits = await GitCommit.find({
+                userName
+            }).limit(1).exec();
+            this.saveEvent(events.firstCommit(commits[0]));
+        }
+        if(commitCount > 10) {
+            const commits = await GitCommit.find({
+                userName
+            }).skip(9).limit(1).exec();
+            this.saveEvent(events.tenCommits(commits[0]));
+        }
+        if(commitCount > 100) {
+            const commits = await GitCommit.find({
+                userName
+            }).skip(99).limit(1).exec();
+            this.saveEvent(events.hundredCommits(commits[0]));
+        }
     }
 
     getMetadata() {
@@ -224,8 +250,10 @@ class GithubModule extends BaseModule {
         for (let commit of commits) {
             let commitObj = new GitCommit({
                 userName,
+                repoName,
+                repoOwner,
                 sha: commit.sha,
-                time: commit.commit.date,
+                time: new Date(commit.commit.author.date),
                 message: commit.commit.message,
                 raw: commit
             })

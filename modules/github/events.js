@@ -10,8 +10,12 @@ const Points = {
     hundredCommits: 1000
 }
 
-
-exports.firstCommit = (userName, repoName, time, commit) => {
+exports.firstCommit = ({
+    userName,
+    repoName,
+    time,
+    sha
+}) => {
     return {
         userName,
         repoName,
@@ -19,11 +23,16 @@ exports.firstCommit = (userName, repoName, time, commit) => {
         type: EventTypes.oneTime,
         points: Points.firstCommit,
         time,
-        key: commit.sha + '_' + repoName
+        key: sha + '_' + repoName
     }
 }
 
-exports.tenCommits = (userName, repoName, time, commit) => {
+exports.tenCommits = ({
+    userName,
+    repoName,
+    time,
+    sha
+}) => {
     return {
         userName,
         repoName,
@@ -31,11 +40,16 @@ exports.tenCommits = (userName, repoName, time, commit) => {
         type: EventTypes.oneTime,
         points: Points.tenCommits,
         time,
-        key: commit.sha + '_' + repoName
+        key: sha + '_' + repoName
     }
 }
 
-exports.hundredCommits = (userName, repoName, time, commit) => {
+exports.hundredCommits = ({
+    userName,
+    repoName,
+    time,
+    sha
+}) => {
     return {
         userName,
         repoName,
@@ -43,6 +57,6 @@ exports.hundredCommits = (userName, repoName, time, commit) => {
         type: EventTypes.oneTime,
         points: Points.hundredCommits,
         time,
-        key: commit.sha + '_' + repoName
+        key: sha + '_' + repoName
     }
 }
