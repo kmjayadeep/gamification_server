@@ -16,7 +16,9 @@ module.exports = (sequelize, DataTypes) => {
         }
     });
 
-    userEvent.associate = function (models) {};
+    userEvent.associate = function (models) {
+
+    };
 
     return userEvent;
 };

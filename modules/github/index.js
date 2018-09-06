@@ -27,8 +27,7 @@ class GithubModule extends BaseModule {
                 return res.status(400).json({
                     error: 'Github module not activated for this user'
                 });
-            const userName = githubUser.userName;
-            const repoResult = await this.addRepo(userName, repoName, repoOwner);
+            const repoResult = await this.addRepo(githubUser, repoName, repoOwner);
             if (repoResult.error)
                 res.status(repoResult.status).json({
                     error: repoResult.error
@@ -42,6 +41,7 @@ class GithubModule extends BaseModule {
                 const history = await this.getEventHistory(req.user.id);
                 res.json(history);
             } catch (error) {
+                console.log(error)
                 res.status(500).json({
                     error: "Unable to fetch event history"
                 })
@@ -89,18 +89,34 @@ class GithubModule extends BaseModule {
         }
     }
 
-    async addRepo(userName, repoName, repoOwner) {
+    async addRepo(githubUser, repoName, repoOwner) {
         try {
-            let verified = await this.verifyDetails(repoName, repoOwner);
-            if (verified) {
-                this.fetchInitialData(userName, repoName, repoOwner); //Works in background
+            const existing = await db.models.repository.findOne({
+                where: {
+                    repoName,
+                    repoOwner,
+                    githubUserId: githubUser.id
+                }
+            })
+            if (existing)
                 return {
-                    message: "Added Repository"
+                    message: "Already Added repository"
+                }
+            let verified = await this.verifyDetails(repoName, repoOwner);
+            if (!verified) {
+                return {
+                    error: "Invalid details",
+                    status: 400
                 }
             }
+            const repository = await db.models.repository.create({
+                repoName,
+                repoOwner,
+                githubUserId: githubUser.id
+            })
+            this.fetchInitialData(githubUser, repository); //Works in background
             return {
-                error: "Invalid details",
-                status: 400
+                message: "Added Repository"
             }
         } catch (err) {
             return {
@@ -126,9 +142,9 @@ class GithubModule extends BaseModule {
         }
     }
 
-    async fetchInitialData(userName, repoName, repoOwner) {
-        await this.fetchCommits(userName, repoName, repoOwner);
-        this.refreshEvents(userName, repoName);
+    async fetchInitialData(githubUser, repository) {
+        await this.fetchCommits(githubUser.userName, repository.repoName, repository.repoOwner);
+        this.refreshRepoEvents(githubUser, repository);
     }
 
     async saveEvent(event) {
@@ -177,7 +193,9 @@ class GithubModule extends BaseModule {
         return events;
     }
 
-    async refreshEvents(userName, repoName) {
+    async refreshRepoEvents(githubUser, repository) {
+        const { userName } = githubUser;
+        const { repoName } = repository;
         await db.models.userEvent.destroy({
             where: {
                 userName
