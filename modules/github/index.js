@@ -36,6 +36,21 @@ class GithubModule extends BaseModule {
                 res.json(repoResult);
         })
 
+        apiService.addProtectedGetRoute('/github/refresh/:repository', async (req, res) => {
+            const repo = await db.models.repository.findOne({
+                where: {
+                    id: req.params.repository
+                }
+            })
+            const githubUser = await db.models.githubUser.findOne({
+                where: {
+                    id: repo.githubUserId
+                }
+            })
+            this.refreshRepoEvents(githubUser, repo); //background
+            res.json('success');
+        })
+
         apiService.addProtectedGetRoute('/github/history', async (req, res) => {
             try {
                 const history = await this.getEventHistory(req.user.id);
@@ -128,7 +143,7 @@ class GithubModule extends BaseModule {
 
     async verifyDetails(repoName, repoOwner) {
         var options = {
-            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}?access_token=e525070e9d06795cadca1e83a7d974f915ee6eaa`,
+            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}?access_token=76af92859310bebdb64da403f0ebbd8ff21324de`,
             headers: {
                 'User-Agent': 'Gamification'
             },
@@ -144,7 +159,7 @@ class GithubModule extends BaseModule {
 
     async fetchInitialData(githubUser, repository) {
         await this.fetchCommits(githubUser.userName, repository.repoName, repository.repoOwner);
-        this.refreshRepoEvents(githubUser, repository);
+        await this.refreshRepoEvents(githubUser, repository);
     }
 
     async saveEvent(event) {
@@ -230,6 +245,11 @@ class GithubModule extends BaseModule {
                     return a + b;
                 }, 0)
                 return reducedValue;
+            },
+            query: {
+                userName: userName,
+                repoName: repoName,
+                repoOwner: repoOwner
             }
         }
         const { results: dailyCommits } = await GitCommit.mapReduce(mapReduce);
@@ -254,7 +274,7 @@ class GithubModule extends BaseModule {
     async fetchCommits(userName, repoName, repoOwner) {
         //get commits by user on the repo
         var options = {
-            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}/commits?author=${userName}&access_token=e525070e9d06795cadca1e83a7d974f915ee6eaa`,
+            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}/commits?author=${userName}&access_token=76af92859310bebdb64da403f0ebbd8ff21324de`,
             headers: {
                 'User-Agent': 'Gamification'
             },
