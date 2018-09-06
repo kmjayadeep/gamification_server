@@ -7,7 +7,9 @@ const EventTypes = {
 const Points = {
     firstCommit: 10,
     tenCommits: 100,
-    hundredCommits: 1000
+    hundredCommits: 1000,
+    oneCommitPerday: 1,
+    fiveCommitsPerday: 10
 }
 
 exports.firstCommit = ({
@@ -58,5 +60,29 @@ exports.hundredCommits = ({
         points: Points.hundredCommits,
         time,
         key: sha + '_' + repoName
+    }
+}
+
+exports.oneCommitPerday = (userName, repoName, date) => {
+    return {
+        userName,
+        repoName,
+        name: 'First commit of the day',
+        type: EventTypes.daily,
+        points: Points.oneCommitPerday,
+        time: new Date(date),
+        key: date + '_' + 'First commit of the day'
+    }
+}
+
+exports.fiveCommitsPerday = (userName, repoName, date) => {
+    return {
+        userName,
+        repoName,
+        name: '5 Commits today',
+        type: EventTypes.daily,
+        points: Points.oneCommitPerday,
+        time: new Date(date),
+        key: date + '_' + '5 Commits today'
     }
 }

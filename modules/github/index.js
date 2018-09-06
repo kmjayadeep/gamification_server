@@ -129,21 +129,6 @@ class GithubModule extends BaseModule {
     async fetchInitialData(userName, repoName, repoOwner) {
         await this.fetchCommits(userName, repoName, repoOwner);
         this.refreshEvents(userName, repoName);
-        // if (commits.length > 0) {
-        //     let commit = commits[0];
-        //     let commitDate = new Date(commit.commit.author.date);
-        //     this.saveEvent(events.firstCommit(userName, repoName, commitDate, commit));
-        // }
-        // if (commits.length >= 10) {
-        //     let commit = commits[9];
-        //     let commitDate = new Date(commit.commit.author.date);
-        //     this.saveEvent(events.tenCommits(userName, repoName, commitDate, commit));
-        // }
-        // if (commits.length >= 100) {
-        //     let commit = commits[99];
-        //     let commitDate = new Date(commit.commit.author.date);
-        //     this.saveEvent(events.hundredCommits(userName, repoName, commitDate, commit));
-        // }
     }
 
     async saveEvent(event) {
@@ -192,7 +177,7 @@ class GithubModule extends BaseModule {
         return events;
     }
 
-    async refreshEvents(userName) {
+    async refreshEvents(userName, repoName) {
         await db.models.userEvent.destroy({
             where: {
                 userName
@@ -208,17 +193,35 @@ class GithubModule extends BaseModule {
             }).limit(1).exec();
             this.saveEvent(events.firstCommit(commits[0]));
         }
-        if(commitCount > 10) {
+        if (commitCount > 10) {
             const commits = await GitCommit.find({
                 userName
             }).skip(9).limit(1).exec();
             this.saveEvent(events.tenCommits(commits[0]));
         }
-        if(commitCount > 100) {
+        if (commitCount > 100) {
             const commits = await GitCommit.find({
                 userName
             }).skip(99).limit(1).exec();
             this.saveEvent(events.hundredCommits(commits[0]));
+        }
+        const mapReduce = {
+            map: function () {
+                emit(this.time.toDateString(), 1);
+            },
+            reduce: function (key, values) {
+                var reducedValue = values.reduce(function (a, b) {
+                    return a + b;
+                }, 0)
+                return reducedValue;
+            }
+        }
+        const { results: dailyCommits } = await GitCommit.mapReduce(mapReduce);
+        for (let dailyCommit of dailyCommits) {
+            const { _id: date, value: count } = dailyCommit;
+            await this.saveEvent(events.oneCommitPerday(userName, repoName, date));
+            if (count >= 5)
+                await this.saveEvent(events.fiveCommitsPerday(userName, repoName, date));
         }
     }
 
