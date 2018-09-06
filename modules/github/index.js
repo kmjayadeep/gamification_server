@@ -209,19 +209,19 @@ class GithubModule extends BaseModule {
             const commits = await GitCommit.find({
                 userName
             }).limit(1).exec();
-            this.saveEvent(events.firstCommit(commits[0]));
+            this.saveEvent(events.firstCommit(commits[0], repository));
         }
         if (commitCount > 10) {
             const commits = await GitCommit.find({
                 userName
             }).skip(9).limit(1).exec();
-            this.saveEvent(events.tenCommits(commits[0]));
+            this.saveEvent(events.tenCommits(commits[0], repository));
         }
         if (commitCount > 100) {
             const commits = await GitCommit.find({
                 userName
             }).skip(99).limit(1).exec();
-            this.saveEvent(events.hundredCommits(commits[0]));
+            this.saveEvent(events.hundredCommits(commits[0], repository));
         }
         const mapReduce = {
             map: function () {
@@ -237,9 +237,9 @@ class GithubModule extends BaseModule {
         const { results: dailyCommits } = await GitCommit.mapReduce(mapReduce);
         for (let dailyCommit of dailyCommits) {
             const { _id: date, value: count } = dailyCommit;
-            await this.saveEvent(events.oneCommitPerday(userName, repoName, date));
+            await this.saveEvent(events.oneCommitPerday(userName, date, repository));
             if (count >= 5)
-                await this.saveEvent(events.fiveCommitsPerday(userName, repoName, date));
+                await this.saveEvent(events.fiveCommitsPerday(userName, date, repository));
         }
     }
 

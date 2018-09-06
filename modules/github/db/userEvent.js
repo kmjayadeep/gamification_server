@@ -5,7 +5,6 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.STRING,
             unique: 'uniqueKey'
         },
-        repoName: DataTypes.STRING,
         name: DataTypes.STRING,
         type: DataTypes.ENUM("ONE_TIME", "DAILY", "MONTHLY"),
         points: DataTypes.INTEGER,
@@ -17,7 +16,8 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     userEvent.associate = function (models) {
-
+        userEvent.belongsTo(models.repository);
+        models.repository.hasMany(userEvent);
     };
 
     return userEvent;
