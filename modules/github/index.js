@@ -128,7 +128,7 @@ class GithubModule extends BaseModule {
 
     async verifyDetails(repoName, repoOwner) {
         var options = {
-            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}`,
+            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}?access_token=e525070e9d06795cadca1e83a7d974f915ee6eaa`,
             headers: {
                 'User-Agent': 'Gamification'
             },
@@ -254,7 +254,7 @@ class GithubModule extends BaseModule {
     async fetchCommits(userName, repoName, repoOwner) {
         //get commits by user on the repo
         var options = {
-            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}/commits?author=${userName}`,
+            uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}/commits?author=${userName}&access_token=e525070e9d06795cadca1e83a7d974f915ee6eaa`,
             headers: {
                 'User-Agent': 'Gamification'
             },
@@ -263,7 +263,9 @@ class GithubModule extends BaseModule {
         const commits = await request(options);
         const GitCommit = db.mongoModels.GitCommit;
         await GitCommit.deleteMany({
-            userName
+            userName,
+            repoName,
+            repoOwner
         }).exec();
         let commitCount = 0;
         for (let commit of commits) {
