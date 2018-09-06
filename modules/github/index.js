@@ -36,6 +36,30 @@ class GithubModule extends BaseModule {
             else
                 res.json(repoResult);
         })
+
+        apiService.addProtectedGetRoute('/github/history', async (req, res) => {
+            try {
+                const history = await this.getEventHistory(req.user.id);
+                res.json(history);
+            } catch (error) {
+                res.status(500).json({
+                    error: "Unable to fetch event history"
+                })
+            }
+        })
+
+        apiService.addProtectedGetRoute('/github/points', async (req, res) => {
+            try {
+                const points = await this.getPoints(req.user.id);
+                res.json({
+                    points
+                });
+            } catch (error) {
+                res.status(500).json({
+                    error: "Unable to fetch points"
+                })
+            }
+        })
     }
 
     async activateModule(user, {
@@ -131,7 +155,40 @@ class GithubModule extends BaseModule {
     }
 
     async getPoints(userId) {
-        
+        const githubUser = await db.models.githubUser.findOne({
+            where: {
+                userId
+            }
+        })
+        if (!githubUser)
+            throw new Error("No such user");
+        const userName = githubUser.userName;
+        const points = await db.models.userEvent.findOne({
+            attributes: [
+                [db.sequelize.fn('sum', db.sequelize.col('points')), 'points']
+            ],
+            where: {
+                userName
+            }
+        })
+        return points.points;
+    }
+
+    async getEventHistory(userId) {
+        const githubUser = await db.models.githubUser.findOne({
+            where: {
+                userId
+            }
+        })
+        if (!githubUser)
+            throw new Error("No such user");
+        const userName = githubUser.userName;
+        const events = await db.models.userEvent.findAll({
+            where: {
+                userName
+            }
+        })
+        return events;
     }
 
     refreshData() {
