@@ -10,7 +10,7 @@ const sequelize = new Sequelize(dbConfig.name, dbConfig.username, dbConfig.passw
     logging: false
 });
 
-const models = ['githubUser', 'repository'];
+const models = ['githubUser', 'repository', 'userEvent'];
 
 models.forEach(file => {
     const model = sequelize['import'](path.join(__dirname, file + '.js'));

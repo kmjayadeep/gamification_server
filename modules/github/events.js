@@ -4,15 +4,45 @@ const EventTypes = {
     monthly: 'MONTHLY'
 }
 
-class Event {
-    constructor(type, points, name, time) {
-        this.type = type;
-        this.points = points;
-        this.name = name;
-        this.time = time;
+const Points = {
+    firstCommit: 10,
+    tenCommits: 100,
+    hundredCommits: 1000
+}
+
+
+exports.firstCommit = (userName, repoName, time, commit) => {
+    return {
+        userName,
+        repoName,
+        name: 'First Commit',
+        type: EventTypes.oneTime,
+        points: Points.firstCommit,
+        time,
+        key: commit.sha + '_' + repoName
     }
 }
 
-exports.firstCommit = () => {
-    return new Event(EventTypes.oneTime, 10, 'First Commit')
+exports.tenCommits = (userName, repoName, time, commit) => {
+    return {
+        userName,
+        repoName,
+        name: '10 Commits',
+        type: EventTypes.oneTime,
+        points: Points.tenCommits,
+        time,
+        key: commit.sha + '_' + repoName
+    }
+}
+
+exports.hundredCommits = (userName, repoName, time, commit) => {
+    return {
+        userName,
+        repoName,
+        name: '100 Commits',
+        type: EventTypes.oneTime,
+        points: Points.hundredCommits,
+        time,
+        key: commit.sha + '_' + repoName
+    }
 }
