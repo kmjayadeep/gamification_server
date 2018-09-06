@@ -195,32 +195,30 @@ class GithubModule extends BaseModule {
 
     async refreshRepoEvents(githubUser, repository) {
         const { userName } = githubUser;
-        const { repoName } = repository;
+        const { repoName, repoOwner, id: repositoryId } = repository;
         await db.models.userEvent.destroy({
             where: {
-                userName
+                userName,
+                repositoryId
             }
         })
         const GitCommit = db.mongoModels.GitCommit;
-        const commitCount = await GitCommit.count({
-            userName
-        });
+        const commitFilter = {
+            userName,
+            repoName,
+            repoOwner
+        }
+        const commitCount = await GitCommit.count(commitFilter);
         if (commitCount > 0) {
-            const commits = await GitCommit.find({
-                userName
-            }).limit(1).exec();
+            const commits = await GitCommit.find(commitFilter).limit(1).exec();
             this.saveEvent(events.firstCommit(commits[0], repository));
         }
         if (commitCount > 10) {
-            const commits = await GitCommit.find({
-                userName
-            }).skip(9).limit(1).exec();
+            const commits = await GitCommit.find(commitFilter).skip(9).limit(1).exec();
             this.saveEvent(events.tenCommits(commits[0], repository));
         }
         if (commitCount > 100) {
-            const commits = await GitCommit.find({
-                userName
-            }).skip(99).limit(1).exec();
+            const commits = await GitCommit.find(commitFilter).skip(99).limit(1).exec();
             this.saveEvent(events.hundredCommits(commits[0], repository));
         }
         const mapReduce = {
