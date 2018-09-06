@@ -5,6 +5,9 @@ module.exports = {
         password: process.env.DATABASE_PASSWORD || '',
         host: process.env.DATABASE_HOST || 'localhost'
     },
+    mongo:{
+        url: 'mongodb://localhost/gamification'
+    },
     user: {
         tokenSecret: 'thisisahugesecretdonttellanyone',
         tokenExpires: 86400 //24hrs

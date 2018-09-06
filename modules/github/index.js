@@ -127,22 +127,23 @@ class GithubModule extends BaseModule {
     }
 
     async fetchInitialData(userName, repoName, repoOwner) {
-        const commits = await this.getCommits(userName, repoName, repoOwner);
-        if (commits.length > 0) {
-            let commit = commits[0];
-            let commitDate = new Date(commit.commit.author.date);
-            this.saveEvent(events.firstCommit(userName, repoName, commitDate, commit));
-        }
-        if (commits.length >= 10) {
-            let commit = commits[9];
-            let commitDate = new Date(commit.commit.author.date);
-            this.saveEvent(events.tenCommits(userName, repoName, commitDate, commit));
-        }
-        if (commits.length >= 100) {
-            let commit = commits[99];
-            let commitDate = new Date(commit.commit.author.date);
-            this.saveEvent(events.hundredCommits(userName, repoName, commitDate, commit));
-        }
+        await this.fetchCommits(userName, repoName, repoOwner);
+        this.refreshData(userName);
+        // if (commits.length > 0) {
+        //     let commit = commits[0];
+        //     let commitDate = new Date(commit.commit.author.date);
+        //     this.saveEvent(events.firstCommit(userName, repoName, commitDate, commit));
+        // }
+        // if (commits.length >= 10) {
+        //     let commit = commits[9];
+        //     let commitDate = new Date(commit.commit.author.date);
+        //     this.saveEvent(events.tenCommits(userName, repoName, commitDate, commit));
+        // }
+        // if (commits.length >= 100) {
+        //     let commit = commits[99];
+        //     let commitDate = new Date(commit.commit.author.date);
+        //     this.saveEvent(events.hundredCommits(userName, repoName, commitDate, commit));
+        // }
     }
 
     async saveEvent(event) {
@@ -205,7 +206,7 @@ class GithubModule extends BaseModule {
         }
     }
 
-    async getCommits(userName, repoName, repoOwner) {
+    async fetchCommits(userName, repoName, repoOwner) {
         //get commits by user on the repo
         var options = {
             uri: `${API_BASE_URL}repos/${repoOwner}/${repoName}/commits?author=${userName}`,
@@ -215,7 +216,25 @@ class GithubModule extends BaseModule {
             json: true
         };
         const commits = await request(options);
-        return commits;
+        const GitCommit = db.mongoModels.GitCommit;
+        await GitCommit.deleteMany({
+            userName
+        }).exec();
+        let commitCount = 0;
+        for (let commit of commits) {
+            let commitObj = new GitCommit({
+                userName,
+                sha: commit.sha,
+                time: commit.commit.date,
+                message: commit.commit.message,
+                raw: commit
+            })
+            try {
+                await commitObj.save();
+                commitCount++;
+            } catch (err) { }
+        }
+        console.log(commitCount + ' commits saved for user ' + userName);
     }
 }
 
