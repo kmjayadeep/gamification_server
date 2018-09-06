@@ -62,6 +62,17 @@ class ModuleInterface {
                 message: "Invalid module"
             })
         })
+        this.apiService.addProtectedGetRoute('/points', async (req, res) => {
+            let points = {}
+            for (let moduleName of AVAILABLE_MODULES) {
+                const module = this.modules[moduleName];
+                try {
+                    let modulePoints = await module.getPoints(req.user.id);
+                    points[moduleName] = modulePoints
+                } catch (err) {}
+            }
+            res.json(points);
+        })
         for (let moduleName of AVAILABLE_MODULES) {
             const module = this.modules[moduleName];
             module.registerRoutes(this.apiService);

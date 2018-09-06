@@ -52,7 +52,7 @@ class GithubModule extends BaseModule {
             try {
                 const points = await this.getPoints(req.user.id);
                 res.json({
-                    points
+                    points: points
                 });
             } catch (error) {
                 res.status(500).json({
